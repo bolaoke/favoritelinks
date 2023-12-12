@@ -36,7 +36,7 @@ function LinkContainer() {
 
     const handleSubmit = (favLink) => {
         console.log('SUBMIT', favLink)
-        setLinks(links.concat(favLink))
+        setLinks(links.concat([favLink]))
     }
 
     return (

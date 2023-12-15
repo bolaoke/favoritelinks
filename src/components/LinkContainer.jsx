@@ -13,30 +13,55 @@ const getLinks = async () => {
         console.error(error)
     }
 }
+async function addLink(id, name, url) {
+    const response = await fetch('http://localhost:3000/api/links', {
+        method: 'POST',
+        body: JSON.stringify({ id, name, url }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    return await response.json()
+}
+async function deleteLink(id) {
+    const response = await fetch('http://localhost:3000/api/links/' + id, {
+        method: 'DELETE'
+    })
+    return await response.json()
+}
+window.deleteLink = deleteLink
+window.addLink = addLink
 
 function LinkContainer() {
     const [links, setLinks] = useState([])
 
-    useEffect(async () => {
-        // const links = await getLinks()
-        // console.log('LINKS FROM SERVER', links)
-        // const updated = links.map((e) => ({
-        //     id: e.id,
-        //     name: e.name,
-        //     URL: e.url,
-        // }))
-        // console.log(updated)
-        setLinks([])
-    }, [links])
+    useEffect(() => {
+        getLinks().then((links) => {
+            console.log('LINKS FROM SERVER', links)
+            const updated = []
+            for (const link of links) {
+                updated[link.id] = {
+                    id: link.id,
+                    name: link.name,
+                    URL: link.url,
+                }
+            }
+            console.log(updated)
+            setLinks(updated)
+        })
+    }, [])
 
     const handleRemove = (index) => {
         const newLinks = links.filter((v, k) => k !== index)
         setLinks(newLinks)
+        deleteLink(index)
     }
 
     const handleSubmit = (favLink) => {
         console.log('SUBMIT', favLink)
         setLinks(links.concat([favLink]))
+        const id = links.length
+        addLink(id, favLink.name, favLink.URL)
     }
 
     return (

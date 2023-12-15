@@ -7593,6 +7593,8 @@ function TableHeader() {
 }
 const TableBody = (props) => {
   const rows = props.linkData.map((row, index2) => {
+    if (!row)
+      return;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: row.name }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: row.URL, children: row.URL }) }),
@@ -7637,26 +7639,51 @@ const getLinks = async () => {
     console.error(error);
   }
 };
+async function addLink(id2, name, url) {
+  const response = await fetch("http://localhost:3000/api/links", {
+    method: "POST",
+    body: JSON.stringify({ id: id2, name, url }),
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+  return await response.json();
+}
+async function deleteLink(id2) {
+  const response = await fetch("http://localhost:3000/api/links/" + id2, {
+    method: "DELETE"
+  });
+  return await response.json();
+}
+window.deleteLink = deleteLink;
+window.addLink = addLink;
 function LinkContainer() {
   const [links, setLinks] = reactExports.useState([]);
-  reactExports.useEffect(async () => {
-    const links2 = await getLinks();
-    console.log("GOT LINKS FROM SERVER", links2);
-    const updated = links2.map((e) => ({
-      id: e.id,
-      name: e.name,
-      URL: e.url
-    }));
-    console.log(updated);
-    setLinks([]);
-  }, [links]);
+  reactExports.useEffect(() => {
+    getLinks().then((links2) => {
+      console.log("LINKS FROM SERVER", links2);
+      const updated = [];
+      for (const link of links2) {
+        updated[link.id] = {
+          id: link.id,
+          name: link.name,
+          URL: link.url
+        };
+      }
+      console.log(updated);
+      setLinks(updated);
+    });
+  }, []);
   const handleRemove = (index2) => {
     const newLinks = links.filter((v2, k2) => k2 !== index2);
     setLinks(newLinks);
+    deleteLink(index2);
   };
   const handleSubmit = (favLink) => {
     console.log("SUBMIT", favLink);
-    setLinks(links.concat(favLink));
+    setLinks(links.concat([favLink]));
+    const id2 = links.length;
+    addLink(id2, favLink.name, favLink.URL);
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: "My Favorite Links" }),
